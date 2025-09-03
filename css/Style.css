@@ -132,6 +132,41 @@ h2{margin:0 0 8px}
 
 #timer{font-variant-numeric:tabular-nums}
 
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.controls button {
+  flex: 1;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary, #4f8cff);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.controls button:hover {
+  background: #5a7fff;
+}
+
+.controls button:active {
+  transform: scale(0.95);
+}
+
+@media (min-width: 768px) {
+  .controls {
+    display: none;
+  }
+}
+
+
 #rosco {
   position:relative;
   width:min(520px,90vw);

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pasapalabra - Computación</title>
-  <link rel="stylesheet" href="Style.css" />
+  <link rel="stylesheet" href="./css/Style.css" />
 </head>
+
 <body>
   <!-- PANTALLA INICIO -->
   <section id="start-screen" class="screen active">
@@ -17,7 +19,7 @@
     </div>
 
     <div class="start-controls">
-      <input id="player-name" type="text" placeholder="Ingresa tu nombre" autocomplete="off"/>
+      <input id="player-name" type="text" placeholder="Ingresa tu nombre" autocomplete="off" />
       <button id="play-btn">Jugar</button>
       <p class="hint-keys">Controles: <strong>ENTER</strong> = responder · <strong>TAB</strong> = pasapalabra</p>
     </div>
@@ -37,13 +39,19 @@
       </div>
     </div>
 
-    <input id="answer" type="text" placeholder="Escribe tu respuesta y presiona ENTER" autocomplete="off"/>
+    <input id="answer" type="text" placeholder="Escribe tu respuesta y presiona ENTER" autocomplete="off" />
+    
+    <div class="controls">
+      <button id="btnEnter">✔️ Responder</button>
+      <button id="btnTab">➡️ Pasapalabra</button>
+    </div>
 
     <div id="end-actions" class="hidden">
       <button id="back-to-start">Volver al inicio</button>
     </div>
   </section>
 
-  <script src="Preguntas.js"></script>
+  <script src="./js/Preguntas.js"></script>
 </body>
+
 </html>

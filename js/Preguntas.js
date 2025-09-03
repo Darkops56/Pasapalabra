@@ -7,7 +7,7 @@ const strip = s => s
 
 const capitalizeName = (name) =>
   name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : "";
-
+//#region ¡Preguntas! 
 const QUESTIONS = [
   {letra: "A", respuesta: ["algoritmo"], pista: "Conjunto de instrucciones que ofrecen una solución"},
   {letra: "B", respuesta: ["bug"], pista: "Error en un programa."},
@@ -36,6 +36,9 @@ const QUESTIONS = [
   {letra: "Y", respuesta: ["youtube","yt"], pista: "Plataforma de videos en internet."},
   {letra: "Z", respuesta: ["zip"], pista: "Archivo comprimido."}
 ].map(q => ({ ...q, estado: 0, passedRound: -1 }));
+//#endregion
+
+//#region Variables/Constantes usadas a lo largo del codigo
 
 let idx = 0;
 let score = 0;
@@ -71,6 +74,8 @@ const TAB_DELAY = 400;
 const ENTER_DELAY = 400; 
 const PASS_FEEDBACK_DELAY = 300;
 let isAdvancing = false;
+
+//#endregion
 
 function renderRanking() {
   ranking.sort((a, b) => b.score - a.score);
@@ -337,6 +342,9 @@ function endGame(message){
   saveRanking(playerName, score);
 }
 
+//#region Escucha Clicks, Enter y Tab para interactuar con el Juego
+
+
 playBtn.addEventListener("click", startGame);
 
   answerInput.addEventListener("keydown", (e)=>{
@@ -360,6 +368,25 @@ playBtn.addEventListener("click", startGame);
       return;
     }
   });
+  document.addEventListener("DOMContentLoaded", () => {
+  const answerInput = document.getElementById("answer");
+  const btnEnter = document.getElementById("btnEnter");
+  const btnTab = document.getElementById("btnTab");
+
+  // Botón "Responder" = Enter
+  btnEnter.addEventListener("click", () => {
+    const event = new KeyboardEvent("keydown", { key: "Enter" });
+    answerInput.dispatchEvent(event);
+  });
+
+  // Botón "Pasapalabra" = Tab
+  btnTab.addEventListener("click", () => {
+    const event = new KeyboardEvent("keydown", { key: "Tab" });
+    answerInput.dispatchEvent(event);
+  });
+});
+
+  //#endregion
 
 function nextPendingIndexAfterPass(current) {
   const total = QUESTIONS.length;
