@@ -9,27 +9,27 @@ const capitalizeName = (name) =>
   name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : "";
 //#region ¡Preguntas! 
 const QUESTIONS = [
-  {letra: "A", respuesta: ["algoritmo"], pista: "Conjunto de instrucciones que ofrecen una solución"},
+  {letra: "A", respuesta: ["algoritmo", "algorithm"], pista: "Conjunto de instrucciones que ofrecen una solución"},
   {letra: "B", respuesta: ["bug"], pista: "Error en un programa."},
-  {letra: "C", respuesta: ["codigo"], pista: "Instrucciones para que la computadora entienda."},
-  {letra: "D", respuesta: ["dato","datos"], pista: "Información que usamos en la computadora."},
+  {letra: "C", respuesta: ["codigo", "code"], pista: "Instrucciones para que la computadora entienda."},
+  {letra: "D", respuesta: ["dato", "datos", "data"], pista: "Información que usamos en la computadora."},
   {letra: "E", respuesta: ["error"], pista: "Lo que aparece cuando algo está mal en el programa."},
-  {letra: "F", respuesta: ["funcion"], pista: "Bloque de código que realiza una tarea."},
+  {letra: "F", respuesta: ["funcion", "function"], pista: "Bloque de código que realiza una tarea."},
   {letra: "G", respuesta: ["gigabyte", "gb"], pista: "Unidad para medir memoria, más grande que MB."},
   {letra: "H", respuesta: ["hardware", "hw"], pista: "Partes físicas de la computadora."},
   {letra: "I", respuesta: ["internet"], pista: "Red gigante que conecta computadoras."},
   {letra: "J", respuesta: ["javascript", "js"], pista: "Lenguaje muy usado en páginas web."},
   {letra: "K", respuesta: ["kilobyte", "kb"], pista: "Unidad inferior a MegaByte."},
-  {letra: "L", respuesta: ["lenguaje"], pista: "Manera o forma de comunicarse con la computadora o personas."},
+  {letra: "L", respuesta: ["lenguaje", "languaje"], pista: "Manera o forma de comunicarse con la computadora o personas."},
   {letra: "M", respuesta: ["monitor"], pista: "Pantalla de la computadora."},
-  {letra: "N", respuesta: ["nube"], pista: "Lugar en internet donde guardamos archivos."},
-  {letra: "O", respuesta: ["ordenador"], pista: "Otra forma de decir computadora."},
-  {letra: "P", respuesta: ["programa"], pista: "Conjunto de instrucciones de la computadora."},
-  {letra: "Q", respuesta: ["query"], pista: "Palabra usada en bases de datos para solicitar informacion."},
+  {letra: "N", respuesta: ["nube", "cloud"], pista: "Lugar en internet donde guardamos archivos."},
+  {letra: "O", respuesta: ["ordenador", "computer"], pista: "Otra forma de decir computadora."},
+  {letra: "P", respuesta: ["programa", "program"], pista: "Conjunto de instrucciones de la computadora."},
+  {letra: "Q", respuesta: ["query", "consulta"], pista: "Palabra usada en bases de datos para solicitar informacion."},
   {letra: "R", respuesta: ["robot"], pista: "Máquina que puede seguir instrucciones."},
   {letra: "S", respuesta: ["software","sw"], pista: "Programas que hacen funcionar la computadora."},
-  {letra: "T", respuesta: ["teclado"], pista: "Hardware que permite escribir en la computadora."},
-  {letra: "U", respuesta: ["usuario"], pista: "Persona que usa un programa."},
+  {letra: "T", respuesta: ["teclado", "keyboard"], pista: "Hardware que permite escribir en la computadora."},
+  {letra: "U", respuesta: ["usuario", "user"], pista: "Persona que usa un programa."},
   {letra: "V", respuesta: ["variable"], pista: "Caja imaginaria para guardar un valor."},
   {letra: "W", respuesta: ["web"], pista: "Conjunto de páginas en internet."},
   {letra: "X", respuesta: ["xml"], pista: "Lenguaje para organizar/guardar datos."},
@@ -204,56 +204,31 @@ function nextPendingIndex(from){
   return -1;
 }
 
-function handleAnswer(){
-
-  if (gameOver) return;
-  
-  
+function handleAnswer() {
   const q = QUESTIONS[idx];
   const user = strip(answerInput.value);
   const letterEl = $(`#letter-${idx}`);
   const tiempoActual = Date.now();
 
-    if (tiempoActual - lastEnterTime < ENTER_DELAY) {
+  if (tiempoActual - lastEnterTime < ENTER_DELAY) {
     clueBox.textContent = "⏳ Espera un momento antes de responder de nuevo.";
-    setTimeout(() => showClue(), 200);
+    setTimeout(() => { if (!gameOver) showClue(); }, 400);
     return;
   }
+  lastEnterTime = tiempoActual;
 
   if (user === "") { 
     clueBox.textContent = "Escribí una respuesta o presioná Tab para pasar.";
+    setTimeout(() => { if (!gameOver) showClue(); }, 400);
     return; 
   }
-  
-  lastEnterTime = tiempoActual;
 
   if (isAdvancing) return;
   isAdvancing = true;
   
-  setTimeout(()=>{
-      const next = nextPendingIndexAfterPass(idx);
-
-      if (next === -1) {
-        const retry = nextPendingIndexAfterPass(idx);
-        if (retry === -1) {
-          endGame("¡Juego terminado!");
-          isAdvancing = false;
-          return;
-        }
-        idx = retry;
-      }
-
-      setCurrentLetter(idx);
-      answerInput.focus();
-      isAdvancing = false;
-      
-    }, PASS_FEEDBACK_DELAY);
-
-let ok = false;
+  let ok = false;
   for (const answer of q.respuesta) {
-    if (strip(answer) === user) {
-      ok = true;
-    }
+    if (strip(answer) === user) ok = true;
   }
   
   if (ok){
@@ -271,7 +246,10 @@ let ok = false;
   } 
 
   answerInput.value = "";
-  setTimeout(()=>{
+
+  setTimeout(() => {
+    if (gameOver) return; // 👈 Corta si terminó el juego
+
     const next = nextPendingIndexAfterPass(idx);
     if (next === -1){
       roundsCompleted++;
@@ -282,54 +260,63 @@ let ok = false;
       if (next <= idx) roundsCompleted++;
       idx = next;
     }
-    setCurrentLetter(idx);
-    showClue();
-    answerInput.focus();
-  }, 300);
-}
 
-function handlePass() {
-
-  const tiempoActual = Date.now();
-  if (tiempoActual - lastTabTime < TAB_DELAY) {
-      clueBox.textContent = "⏳ Espera un momento antes de pasar de nuevo.";
-      setTimeout(() => showClue(), 400);
-      return;
-    }
-    lastTabTime = tiempoActual;
-
-    if (isAdvancing) return;
-      isAdvancing = true;
-
-    const q = QUESTIONS[idx];
-    q.estado = 2;
-    q.passedRound = roundsCompleted;
-    $(`#letter-${idx}`).classList.add("passed");
-    feedback("pass");
-
-    setTimeout(()=>{
-      const next = nextPendingIndexAfterPass(idx);
-
-      if (next === -1) {
-        roundsCompleted++;
-        const retry = nextPendingIndexAfterPass(idx);
-        if (retry === -1) {
-          endGame("¡Juego terminado!");
-          isAdvancing = false;
-          return;
-        }
-        idx = retry;
-      } else {
-        if (next <= idx) roundsCompleted++;
-        idx = next;
-      }
-
+    if (!gameOver) {
       setCurrentLetter(idx);
       showClue();
       answerInput.focus();
-      isAdvancing = false;
-    }, PASS_FEEDBACK_DELAY);
+    }
+    isAdvancing = false;
+  }, 300);
 }
+
+
+function handlePass() {
+  const tiempoActual = Date.now();
+  if (tiempoActual - lastTabTime < TAB_DELAY) {
+    clueBox.textContent = "⏳ Espera un momento antes de pasar de nuevo.";
+    setTimeout(() => { if (!gameOver) showClue(); }, 400);
+    return;
+  }
+  lastTabTime = tiempoActual;
+
+  if (isAdvancing) return;
+  isAdvancing = true;
+
+  const q = QUESTIONS[idx];
+  q.estado = 2;
+  q.passedRound = roundsCompleted;
+  $(`#letter-${idx}`).classList.add("passed");
+  feedback("pass");
+
+  const next = nextPendingIndexAfterPass(idx); // 👈 Estaba faltando
+
+  setTimeout(() => {
+    if (gameOver) return; // 👈 corta si ya terminó
+
+    if (next === -1) {
+      roundsCompleted++;
+      const retry = nextPendingIndexAfterPass(idx);
+      if (retry === -1) {
+        endGame("¡Juego terminado!");
+        isAdvancing = false;
+        return;
+      }
+      idx = retry;
+    } else {
+      if (next <= idx) roundsCompleted++;
+      idx = next;
+    }
+
+    if (!gameOver) {
+      setCurrentLetter(idx);
+      showClue(); // 👈 Ahora muestra la pista de la siguiente letra
+      answerInput.focus();
+    }
+    isAdvancing = false;
+  }, PASS_FEEDBACK_DELAY);
+}
+
 
 function endGame(message){
   clearInterval(timerId);
@@ -340,6 +327,7 @@ function endGame(message){
   answerInput.value = "";
   endActions.classList.remove("hidden");
   saveRanking(playerName, score);
+  return;
 }
 
 //#region Escucha Clicks, Enter y Tab para interactuar con el Juego
@@ -405,8 +393,6 @@ function nextPendingIndexAfterPass(current) {
 
   return -1; 
 }
-
-
 
 backBtn.addEventListener("click", ()=>{
   gameScreen.classList.remove("active");
