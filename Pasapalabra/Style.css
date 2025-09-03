@@ -1,0 +1,305 @@
+:root{
+  --bg:#0f1221;
+  --panel:#1c2140;
+  --text:#eef2ff;
+  --muted:#a3aed0;
+  --primary:#4f8cff;
+  --ok:#2ecc71;
+  --bad:#e74c3c;
+  --pass:#f1c40f;
+  --gold:gold;
+  --silver:silver;
+  --bronze:#cd7f32;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body {
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+  background: linear-gradient(-45deg, #0f1221, #1c2140, #24305b, #4f8cff);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  color:var(--text);
+}
+
+@keyframes gradientBG {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity: 0.2;
+  animation: twinkle 6s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.1; }
+  to   { opacity: 0.3; }
+}
+
+.screen{
+  display:none;
+  min-height:100%;
+  padding:24px 16px 40px;
+  align-items:center;
+  justify-content:flex-start;
+  flex-direction:column;
+  gap:16px;
+}
+
+.screen.active{display:flex}
+
+h1{margin:8px 0 4px;font-size:1.8rem}
+h2{margin:0 0 8px}
+
+.ranking-box{
+  width:min(420px,90vw);
+  background:var(--panel);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+#ranking-list{
+  list-style:none;
+  padding:0;
+  margin:8px 0 0;
+}
+
+#ranking-list li{
+  padding:6px 10px;
+  border-radius:10px;
+  background:rgba(255,255,255,.04);
+  margin:6px 0;
+  font-size:1rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  justify-content:space-between;
+}
+.rank-name{font-weight:600}
+.rank-score{color:var(--muted)}
+.gold .rank-name{color:var(--gold)}
+.silver .rank-name{color:var(--silver)}
+.bronze .rank-name{color:var(--bronze)}
+
+.start-controls{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  margin-top:10px;
+}
+#player-name{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#121530;
+  color:var(--text);
+  width:min(340px,90vw);
+  outline:none;
+}
+
+#play-btn,#back-to-start{
+  padding:10px 18px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  background:var(--primary);
+  color:white;
+  font-weight:700;
+  box-shadow:0 6px 18px rgba(79,140,255,.35);
+}
+
+.hint-keys{color:var(--muted);font-size:.95rem;margin:6px 0 0}
+
+.topbar{
+  width:min(900px,95vw);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:8px 0 4px;
+  font-weight:700;
+}
+
+#timer{font-variant-numeric:tabular-nums}
+
+#rosco {
+  position:relative;
+  width:min(520px,90vw);
+  height:min(520px,90vw);
+  margin:10px auto 6px;
+  animation: glow 3s infinite ease-in-out;
+}
+
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 4px #4f8cff); }
+  50% { filter: drop-shadow(0 0 16px #4f8cff); }
+}
+
+#rosco {
+  position:relative;
+  z-index:1;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.9) 80%);
+  pointer-events: none;
+  z-index:0;
+}
+
+.letter {
+  position:absolute;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:#24305b;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  letter-spacing:.5px;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  transition:background .25s ease, transform .25s ease;
+  animation: appear 0.4s ease both;
+}
+
+.letter.current {
+  transform: scale(1.2) rotate(5deg);
+  outline:3px solid #7aa2ff;
+  z-index:2;
+}
+
+.letter.correct {
+  background:var(--ok)!important;
+  animation: pulseOk 0.5s ease;
+}
+.letter.incorrect {
+  background:var(--bad)!important;
+  animation: pulseKo 0.5s ease;
+}
+.letter.passed {
+  background:var(--pass)!important;
+  color:#1a1a1a;
+  animation: pulsePass 0.5s ease;
+}
+
+/* Aparición suave de las letras */
+@keyframes appear {
+  from { opacity:0; transform:scale(0.6); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+/* Feedback con rebote */
+@keyframes pulseOk {
+  0% { transform:scale(1); }
+  40%{ transform:scale(1.3); }
+  100%{ transform:scale(1); }
+}
+@keyframes pulseKo {
+  0% { transform:scale(1) rotate(0); }
+  25%{ transform:rotate(-10deg); }
+  50%{ transform:rotate(10deg); }
+  75%{ transform:rotate(-10deg); }
+  100%{ transform:scale(1) rotate(0); }
+}
+@keyframes pulsePass {
+  0% { opacity:0.7; }
+  100%{ opacity:1; }
+}
+
+
+.letter.current{transform:scale(1.06);outline:3px solid #7aa2ff}
+.letter.correct{background:var(--ok)!important}
+.letter.incorrect{background:var(--bad)!important}
+.letter.passed{background:var(--pass)!important;color:#1a1a1a}
+
+#center{
+  position:absolute;inset:50% auto auto 50%;
+  transform:translate(-50%,-50%);
+  width:72%;
+  min-height:110px;
+  background:var(--panel);
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+#clue{font-size:1.05rem;line-height:1.35}
+
+#clue {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text);
+  text-shadow: 0 0 6px rgba(79,140,255,0.6);
+  letter-spacing: 0.5px;
+  animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#clue {
+  overflow: hidden;
+  animation: typing 2.5s steps(30, end), blink .8s infinite;
+}
+
+
+@keyframes blink {
+  50% { border-color: transparent }
+}
+#clue.correct {
+  background: rgba(46, 204, 113, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  transition: background 0.4s;
+}
+#clue.incorrect {
+  background: rgba(231, 76, 60, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  transition: background 0.4s;
+}
+
+
+
+.feedback{
+  font-size:2.6rem;
+  font-weight:900;
+  animation:pop .3s ease;
+}
+
+.feedback.ok{color:var(--ok)}
+.feedback.ko{color:var(--bad)}
+.feedback.pass{color:var(--pass)}
+
+@keyframes pop{
+  from{opacity:0; transform:scale(.6)}
+  to{opacity:1; transform:scale(1)}
+}
+
+#answer{
+  width:min(520px,90vw);
+  padding:12px 14px;
+  border-radius:12px;border:1px solid rgba(255,255,255,.15);
+  background:#121530;color:var(--text);
+  outline:none;
+  font-size:1rem;
+}
+
+.hidden{display:none}
