@@ -9,32 +9,31 @@ const capitalizeName = (name) =>
   name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : "";
 //#region ¡Preguntas! 
 const QUESTIONS = [
-  {letra: "A", respuesta: ["algoritmo", "algorithm"], pista: "Conjunto de instrucciones que ofrecen una solución"},
-  {letra: "B", respuesta: ["bug"], pista: "Error en un programa."},
-  {letra: "C", respuesta: ["codigo", "code"], pista: "Instrucciones para que la computadora entienda."},
-  {letra: "D", respuesta: ["dato", "datos", "data"], pista: "Información que usamos en la computadora."},
-  {letra: "E", respuesta: ["error"], pista: "Lo que aparece cuando algo está mal en el programa."},
-  {letra: "F", respuesta: ["funcion", "function"], pista: "Bloque de código que realiza una tarea."},
-  {letra: "G", respuesta: ["gigabyte", "gb"], pista: "Unidad para medir memoria, más grande que MB."},
-  {letra: "H", respuesta: ["hardware", "hw"], pista: "Partes físicas de la computadora."},
-  {letra: "I", respuesta: ["internet"], pista: "Red gigante que conecta computadoras."},
-  {letra: "J", respuesta: ["javascript", "js"], pista: "Lenguaje muy usado en páginas web."},
-  {letra: "K", respuesta: ["kilobyte", "kb"], pista: "Unidad inferior a MegaByte."},
-  {letra: "L", respuesta: ["lenguaje", "languaje"], pista: "Manera o forma de comunicarse con la computadora o personas."},
-  {letra: "M", respuesta: ["monitor"], pista: "Pantalla de la computadora."},
-  {letra: "N", respuesta: ["nube", "cloud"], pista: "Lugar en internet donde guardamos archivos."},
-  {letra: "O", respuesta: ["ordenador", "computer"], pista: "Otra forma de decir computadora."},
-  {letra: "P", respuesta: ["programa", "program"], pista: "Conjunto de instrucciones de la computadora."},
-  {letra: "Q", respuesta: ["query", "consulta"], pista: "Palabra usada en bases de datos para solicitar informacion."},
-  {letra: "R", respuesta: ["robot"], pista: "Máquina que puede seguir instrucciones."},
-  {letra: "S", respuesta: ["software","sw"], pista: "Programas que hacen funcionar la computadora."},
-  {letra: "T", respuesta: ["teclado", "keyboard"], pista: "Hardware que permite escribir en la computadora."},
-  {letra: "U", respuesta: ["usuario", "user"], pista: "Persona que usa un programa."},
-  {letra: "V", respuesta: ["variable"], pista: "Caja imaginaria para guardar un valor."},
-  {letra: "W", respuesta: ["web"], pista: "Conjunto de páginas en internet."},
-  {letra: "X", respuesta: ["xml"], pista: "Lenguaje para organizar/guardar datos."},
-  {letra: "Y", respuesta: ["youtube","yt"], pista: "Plataforma de videos en internet."},
-  {letra: "Z", respuesta: ["zip"], pista: "Archivo comprimido."}
+  {letra: "A", respuesta: ["app", "aplicacion", "aplicaciones"], pista: "Programa que usás en tu celular o computadora."},
+  {letra: "B", respuesta: ["buscador", "browser"], pista: "Herramienta como Google o Bing para encontrar cosas en internet."},
+  {letra: "C", respuesta: ["contraseña", "password", "clave", "contraseñas"], pista: "Secreta y personal, sirve para entrar a tus cuentas."},
+  {letra: "D", respuesta: ["descargar", "download", "bajar"], pista: "Acción de guardar un archivo o programa de internet en tu dispositivo."},
+  {letra: "E", respuesta: ["email", "correo", "correos", "electronic mail", "e-mail"], pista: "Medio digital para mandar mensajes y archivos."},
+  {letra: "F", respuesta: ["firewall", "cortafuegos"], pista: "Sistema que protege la red de accesos no permitidos."},
+  {letra: "G", respuesta: ["google"], pista: "Buscador de internet muy famoso, creado en 1998."},
+  {letra: "H", respuesta: ["hacker"], pista: "Persona experta en computadoras; puede usarse para bien o para mal."},
+  {letra: "I", respuesta: ["internet", "red"], pista: "Red gigante que conecta millones de computadoras y celulares."},
+  {letra: "J", respuesta: ["jpg", "jpeg"], pista: "Formato común para guardar imágenes."},
+  {letra: "K", respuesta: ["kb", "kilobyte", "kilobytes"], pista: "Unidad de medida de información más chica que el MB."},
+  {letra: "L", respuesta: ["link", "enlace", "enlaces", "hipervinculo"], pista: "Texto o botón que al hacer clic te lleva a otra página."},
+  {letra: "M", respuesta: ["memoria"], pista: "Parte de la computadora o celular donde se guardan datos y programas."},
+  {letra: "N", respuesta: ["nube", "cloud"], pista: "Lugar en internet donde podés guardar archivos y fotos."},
+  {letra: "O", respuesta: ["offline", "desconectado"], pista: "Cuando no estás conectado a internet."},
+  {letra: "P", respuesta: ["pixel"], pista: "Pequeño puntito de color que forma una imagen en la pantalla."},
+  {letra: "Q", respuesta: ["qr"], pista: "Código cuadrado que escaneás con tu celular para abrir un enlace."},
+  {letra: "R", respuesta: ["router", "routers"], pista: "Aparato que reparte internet en tu casa por WiFi."},
+  {letra: "S", respuesta: ["spam", "spams"], pista: "Correo no deseado o mensajes molestos que llegan todo el tiempo."},{letra: "T", respuesta: ["tablet", "tablets"], pista: "Dispositivo con pantalla táctil, más grande que un celular pero más chico que una computadora."},
+  {letra: "U", respuesta: ["usb"], pista: "Puerto o entrada que tienen todas las laptops"},
+  {letra: "V", respuesta: ["vpn"], pista: "Herramienta que protege tu conexión en internet y tu privacidad."},
+  {letra: "W", respuesta: ["wifi", "wireless fidelity", "wi-fi"], pista: "Conexión inalámbrica que te da acceso a internet."},
+  {letra: "X", respuesta: ["xbox"], pista: "Consola de videojuegos muy conocida de Microsoft."},
+  {letra: "Y", respuesta: ["youtube", "yt"], pista: "Plataforma donde podés mirar y subir videos."},
+  {letra: "Z", respuesta: ["zip"], pista: "Archivo comprimido que junta varios archivos en uno solo."}
 ].map(q => ({ ...q, estado: 0, passedRound: -1 }));
 //#endregion
 
@@ -87,7 +86,7 @@ function renderRanking() {
     else if (i === 1) li.classList.add("silver");
     else if (i === 2) li.classList.add("bronze");
     const medal = i === 0 ? "🥇 - Senior" : i === 1 ? "🥈 - Middle" : i === 2 ? "🥉 - Junior" : "Trainee";
-    li.innerHTML = `ok
+    li.innerHTML = `
       <span class="rank-name">${medal} ${r.name}</span>
       <span class="rank-score">${r.score} pts</span>`;
     rankingList.appendChild(li);
