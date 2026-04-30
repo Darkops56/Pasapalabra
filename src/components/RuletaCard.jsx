@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Play, Trash2, Trophy } from 'lucide-react';
+import { Play, Trash2, Trophy, Activity } from 'lucide-react';
 
-export default function RuletaCard({ ruleta, onDelete, onShowRanking }) {
+export default function RuletaCard({ ruleta, onDelete, onShowRanking, onLiveDashboard }) {
   return (
     <div className="glass-panel p-6 flex flex-col h-full hover:-translate-y-1 transition-transform duration-300 group">
       <div className="flex-1">
@@ -25,6 +25,13 @@ export default function RuletaCard({ ruleta, onDelete, onShowRanking }) {
           title="Ver Ranking"
         >
           <Trophy size={16} />
+        </button>
+        <button 
+          onClick={() => onLiveDashboard(ruleta)}
+          className="btn-secondary py-2 px-3 text-sm !border-green-500/50 hover:!bg-green-500/20 text-green-400"
+          title="Dashboard en Vivo"
+        >
+          <Activity size={16} />
         </button>
         {!ruleta.isDefault && (
           <button 

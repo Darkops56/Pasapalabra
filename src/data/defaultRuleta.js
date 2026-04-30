@@ -31,5 +31,6 @@ export const defaultRuleta = {
     { letra: "Y", respuesta: ["youtube", "yt"], pista: "Plataforma donde podés mirar y subir videos." },
     { letra: "Z", respuesta: ["zip"], pista: "Archivo comprimido que junta varios archivos en uno solo." }
   ],
-  ranking: []
+  ranking: [],
+  password: "1234"
 };

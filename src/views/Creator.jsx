@@ -12,6 +12,7 @@ export default function Creator() {
 
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [password, setPassword] = useState('');
   const [activeLetter, setActiveLetter] = useState('A');
   const [lettersData, setLettersData] = useState({});
 
@@ -22,9 +23,13 @@ export default function Creator() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!titulo.trim()) {
       alert("Por favor, ingresa un título para la ruleta.");
+      return;
+    }
+    if (!password.trim()) {
+      alert("Por favor, ingresa una contraseña para acceder al Dashboard en Vivo.");
       return;
     }
 
@@ -58,8 +63,23 @@ export default function Creator() {
       ranking: []
     };
 
-    addRuleta(newRuleta);
-    navigate('/');
+    try {
+      const response = await fetch('http://localhost:3001/api/ruletas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: newRuleta.id, password: password.trim() })
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al guardar la contraseña en el servidor");
+      }
+
+      addRuleta(newRuleta);
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      alert("Hubo un problema al crear la ruleta en el servidor.");
+    }
   };
 
   // Determinar si una letra ya tiene datos mínimos (pista y respuesta)
@@ -101,6 +121,16 @@ export default function Creator() {
                   onChange={(e) => setDescripcion(e.target.value)}
                   placeholder="De qué trata esta ruleta..."
                   className="input-field min-h-[100px] resize-y"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Contraseña Dashboard (Obligatoria)</label>
+                <input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Contraseña para ver en vivo"
+                  className="input-field"
                 />
               </div>
             </div>

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './views/Home';
 import Creator from './views/Creator';
 import Game from './views/Game';
+import HostDashboard from './views/HostDashboard';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/crear" element={<Creator />} />
             <Route path="/jugar/:id" element={<Game />} />
+            <Route path="/dashboard/:id" element={<HostDashboard />} />
           </Routes>
         </main>
       </div>

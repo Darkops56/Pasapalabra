@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRuletas } from '../hooks/useRuletas';
+import { socket } from '../services/socket';
 import { ArrowLeft, Trophy } from 'lucide-react'; // <-- Agregamos Trophy
 
 // Helper for string comparison
@@ -15,6 +16,7 @@ export default function Game() {
   const [playerName, setPlayerName] = useState('');
   const [gameState, setGameState] = useState('start'); // start | playing | gameover
   const [showRanking, setShowRanking] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   
   // Game state variables
   const [questions, setQuestions] = useState(() => {
@@ -54,6 +56,19 @@ export default function Game() {
     return () => clearInterval(timerRef.current);
   }, [gameState, timeLeft]);
 
+  // Emitir actualizaciones al Host (Dashboard)
+  useEffect(() => {
+    if (gameState === 'playing') {
+      socket.emit('player:update', {
+        ruletaId: id,
+        playerName: playerName.trim(),
+        score,
+        timeLeft,
+        currentIndex
+      });
+    }
+  }, [score, timeLeft, currentIndex, gameState, id, playerName]);
+
   useEffect(() => {
     if (gameState === 'playing' && inputRef.current) {
       inputRef.current.focus();
@@ -66,6 +81,7 @@ export default function Game() {
       return;
     }
     setGameState('playing');
+    socket.emit('player:join', { ruletaId: id, playerName: playerName.trim() });
   };
 
   const endGame = (reason) => {
@@ -73,6 +89,12 @@ export default function Game() {
     clearInterval(timerRef.current);
     const timeTaken = 240 - timeLeft;
     saveRanking(id, playerName.trim(), score, timeTaken);
+    socket.emit('player:finished', { 
+      ruletaId: id, 
+      playerName: playerName.trim(), 
+      score, 
+      timeSeconds: timeTaken 
+    });
   };
 
   const getNextPendingIndex = (current, currentRounds, currentQuestions) => {
@@ -293,11 +315,7 @@ export default function Game() {
           <div className="flex w-full max-w-5xl justify-between items-center mb-6 px-6 glass-panel py-4">
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => {
-                  if(window.confirm("¿Estás seguro de que deseas abandonar la partida? Tu progreso no se guardará en el ranking.")) {
-                    navigate('/');
-                  }
-                }} 
+                onClick={() => setShowExitConfirm(true)} 
                 className="text-slate-400 hover:text-red-400 transition-colors p-1" 
                 title="Abandonar Partida"
               >
@@ -406,6 +424,26 @@ export default function Game() {
           <button onClick={() => navigate('/')} className="w-full btn-primary py-4 text-xl">
             Volver al Inicio
           </button>
+        </div>
+      )}
+
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="glass-panel p-6 max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200 text-center">
+            <h2 className="text-xl font-bold text-red-400 mb-4">¿Abandonar Partida?</h2>
+            <p className="text-slate-300 mb-6">¿Estás seguro de que deseas abandonar la partida? Tu progreso no se guardará en el ranking.</p>
+            <div className="flex justify-center gap-4">
+              <button onClick={() => setShowExitConfirm(false)} className="btn-secondary py-2 px-6">
+                Cancelar
+              </button>
+              <button 
+                onClick={() => navigate('/')} 
+                className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 py-2 px-6 rounded-lg font-bold transition-all"
+              >
+                Abandonar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
