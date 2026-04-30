@@ -1,58 +1,74 @@
 import { useState, useEffect } from 'react';
 import { defaultRuleta } from '../data/defaultRuleta';
 
-const STORAGE_KEY = 'ruletas_db';
-
-const getInitialData = () => {
-  const storedData = localStorage.getItem(STORAGE_KEY);
-  if (!storedData) {
-    const initialData = [defaultRuleta];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
-    return initialData;
-  }
-  return JSON.parse(storedData);
-};
-
 export function useRuletas() {
-  const [ruletas, setRuletas] = useState(getInitialData);
+  const [ruletas, setRuletas] = useState([defaultRuleta]);
+  const [loading, setLoading] = useState(true);
 
-  const saveRuletas = (newRuletas) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newRuletas));
-    setRuletas(newRuletas);
+  const fetchRuletas = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/ruletas');
+      const data = await res.json();
+      
+      const defaultRankingRes = await fetch('http://localhost:3001/api/ruletas/default-ranking');
+      const defaultRankingData = await defaultRankingRes.json();
+      
+      const updatedDefault = { ...defaultRuleta, ranking: defaultRankingData.ranking };
+      setRuletas([updatedDefault, ...data.ruletas]);
+    } catch (e) {
+      console.error('Error fetching ruletas:', e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchRuletas();
+  }, []);
 
   const getRuletas = () => ruletas;
-
   const getRuletaById = (id) => ruletas.find(r => r.id === id);
 
-  const addRuleta = (newRuleta) => {
-    const newRuletas = [...ruletas, newRuleta];
-    saveRuletas(newRuletas);
+  const addRuleta = async (newRuleta, password) => {
+    try {
+      const response = await fetch('http://localhost:3001/api/ruletas/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ruleta: newRuleta, password })
+      });
+      if (!response.ok) throw new Error("Error saving ruleta");
+      await fetchRuletas();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
-  const deleteRuleta = (id) => {
-    const newRuletas = ruletas.filter(r => r.id !== id);
-    saveRuletas(newRuletas);
+  const deleteRuleta = async (id) => {
+    try {
+      await fetch(`http://localhost:3001/api/ruletas/${id}`, { method: 'DELETE' });
+      await fetchRuletas();
+    } catch (e) {
+      console.error('Error deleting ruleta:', e);
+    }
   };
 
-  const saveRanking = (id, playerName, score, timeSeconds) => {
-    const newRuletas = ruletas.map(r => {
-      if (r.id === id) {
-        const newRanking = [...(r.ranking || []), { playerName, score, timeSeconds }];
-        // Sort by score descending, then by time ascending
-        newRanking.sort((a, b) => {
-          if (b.score !== a.score) return b.score - a.score;
-          return a.timeSeconds - b.timeSeconds;
-        });
-        return { ...r, ranking: newRanking };
-      }
-      return r;
-    });
-    saveRuletas(newRuletas);
+  const saveRanking = async (id, playerName, score, timeSeconds) => {
+    try {
+      await fetch(`http://localhost:3001/api/ruletas/${id}/ranking`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerName, score, timeSeconds })
+      });
+      await fetchRuletas();
+    } catch (e) {
+      console.error('Error saving ranking:', e);
+    }
   };
 
   return {
     ruletas,
+    loading,
     getRuletas,
     getRuletaById,
     addRuleta,

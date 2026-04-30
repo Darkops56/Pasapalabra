@@ -10,19 +10,24 @@ const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g
 export default function Game() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getRuletaById, saveRanking } = useRuletas();
+  const { getRuletaById, saveRanking, loading } = useRuletas();
 
-  const [ruleta, setRuleta] = useState(() => getRuletaById(id) || null);
+  const ruleta = getRuletaById(id);
   const [playerName, setPlayerName] = useState('');
   const [gameState, setGameState] = useState('start'); // start | playing | gameover
   const [showRanking, setShowRanking] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   
   // Game state variables
-  const [questions, setQuestions] = useState(() => {
-    const data = getRuletaById(id);
-    return data ? data.preguntas.map(q => ({ ...q, estado: 0, passedRound: -1 })) : [];
-  });
+  const [questions, setQuestions] = useState([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (ruleta && !isInitialized) {
+      setQuestions(ruleta.preguntas.map(q => ({ ...q, estado: 0, passedRound: -1 })));
+      setIsInitialized(true);
+    }
+  }, [ruleta, isInitialized]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(240);
@@ -36,13 +41,6 @@ export default function Game() {
   const timerRef = useRef(null);
   const lastActionTime = useRef(0);
   const isAdvancing = useRef(false);
-
-  useEffect(() => {
-    if (!ruleta) {
-      alert("Ruleta no encontrada.");
-      navigate('/');
-    }
-  }, [ruleta, navigate]);
 
   // Timer logic
   useEffect(() => {
@@ -80,9 +78,43 @@ export default function Game() {
       alert("Por favor, ingresa tu nombre para el ranking.");
       return;
     }
-    setGameState('playing');
-    socket.emit('player:join', { ruletaId: id, playerName: playerName.trim() });
+    
+    socket.emit('player:join', { ruletaId: id, playerName: playerName.trim() }, (response) => {
+      if (response && !response.success) {
+        alert(response.message || "No se pudo unir a la partida.");
+      } else {
+        setGameState('playing');
+      }
+    });
   };
+
+  // Detect tab visibility for 'absent' status
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (gameState === 'playing') {
+        const status = document.hidden ? 'absent' : 'playing';
+        socket.emit('player:status', { ruletaId: id, status });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [gameState, id]);
+
+  const gameStateRef = useRef(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
+
+  useEffect(() => {
+    return () => {
+      if (gameStateRef.current === 'playing') {
+        socket.emit('player:status', { ruletaId: id, status: 'abandoned' });
+      }
+    };
+  }, [id]);
 
   const endGame = (reason) => {
     setGameState('gameover');
@@ -96,6 +128,17 @@ export default function Game() {
       timeSeconds: timeTaken 
     });
   };
+
+  useEffect(() => {
+    const handleKicked = () => {
+      alert("Has sido expulsado de la partida por el administrador.");
+      navigate('/');
+    };
+    socket.on('player:kicked', handleKicked);
+    return () => {
+      socket.off('player:kicked', handleKicked);
+    };
+  }, [navigate]);
 
   const getNextPendingIndex = (current, currentRounds, currentQuestions) => {
     const total = currentQuestions.length;
@@ -260,14 +303,17 @@ export default function Game() {
         <div className="absolute inset-0 m-auto w-[68%] h-[68%] bg-dark-800/90 rounded-full border border-dark-600 shadow-2xl flex flex-col items-center justify-center p-3 sm:p-6 text-center z-0 backdrop-blur-md">
           {gameState === 'playing' ? (
             <>
-              <span className="text-4xl sm:text-7xl font-extrabold text-primary-400 mb-1 sm:mb-3 drop-shadow-md">
+              <div className="text-[10px] sm:text-xs uppercase tracking-widest text-primary-300 font-bold mb-1 sm:mb-2">
+                {questions[currentIndex]?.tipo === 'contiene' ? 'Contiene la letra' : 'Empieza con la letra'}
+              </div>
+              <span className="text-4xl sm:text-7xl font-extrabold text-primary-400 mb-1 sm:mb-2 drop-shadow-md leading-none">
                 {questions[currentIndex]?.letra}
               </span>
-              <p className="text-xs sm:text-xl text-slate-300 font-semibold line-clamp-3 sm:line-clamp-4">
+              <p className="text-xs sm:text-lg text-slate-300 font-semibold line-clamp-3 sm:line-clamp-4 mt-1 sm:mt-2">
                 {questions[currentIndex]?.pista}
               </p>
               {questions[currentIndex]?.descripcion && (
-                <p className="text-[10px] sm:text-sm text-slate-400 mt-1 sm:mt-3 line-clamp-2 sm:line-clamp-3 italic hidden sm:block">
+                <p className="text-[10px] sm:text-sm text-slate-400 mt-1 sm:mt-2 line-clamp-2 sm:line-clamp-3 italic hidden sm:block">
                   {questions[currentIndex]?.descripcion}
                 </p>
               )}
@@ -280,8 +326,17 @@ export default function Game() {
     );
   };
 
-  if (!ruleta) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <div className="text-white text-xl animate-pulse">Cargando partida...</div>
+      </div>
+    );
+  }
 
+  if (!ruleta) {
+    return <div className="text-center text-white py-20">Ruleta no encontrada</div>;
+  }
   return (
     // Ampliamos el max-w general para que entren ambas columnas holgadamente
     <div className="py-4 max-w-7xl mx-auto flex flex-col items-center px-4">
@@ -437,7 +492,10 @@ export default function Game() {
                 Cancelar
               </button>
               <button 
-                onClick={() => navigate('/')} 
+                onClick={() => {
+                  socket.emit('player:status', { ruletaId: id, status: 'abandoned' });
+                  navigate('/');
+                }} 
                 className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 py-2 px-6 rounded-lg font-bold transition-all"
               >
                 Abandonar

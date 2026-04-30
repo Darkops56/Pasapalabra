@@ -6,7 +6,7 @@ import RuletaCard from '../components/RuletaCard';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { ruletas, deleteRuleta } = useRuletas();
+  const { ruletas, deleteRuleta, loading } = useRuletas();
   const [currentPage, setCurrentPage] = useState(1);
   const [rankingModal, setRankingModal] = useState(null);
   const [liveModal, setLiveModal] = useState(null);
@@ -14,6 +14,14 @@ export default function Home() {
   const [liveError, setLiveError] = useState('');
   const [ruletaToDelete, setRuletaToDelete] = useState(null);
   
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <div className="text-white text-xl animate-pulse">Cargando ruletas...</div>
+      </div>
+    );
+  }
+
   const ITEMS_PER_PAGE = 6;
   const totalPages = Math.ceil(ruletas.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

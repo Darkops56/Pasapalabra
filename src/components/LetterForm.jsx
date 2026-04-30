@@ -17,6 +17,19 @@ export default function LetterForm({ letter, data, onChange }) {
 
       <div className="space-y-5">
         <div>
+          <label className="block text-sm font-semibold text-slate-300 mb-2">Tipo</label>
+          <select
+            name="tipo"
+            value={data.tipo || 'comienza'}
+            onChange={handleChange}
+            className="input-field appearance-none bg-dark-800"
+          >
+            <option value="comienza">Comienza con la letra:</option>
+            <option value="contiene">Contiene la letra:</option>
+          </select>
+        </div>
+
+        <div>
           <label className="block text-sm font-semibold text-slate-300 mb-2">Pregunta / Pista</label>
           <input 
             type="text" 

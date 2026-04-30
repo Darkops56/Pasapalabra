@@ -42,6 +42,7 @@ export default function Creator() {
         
       return {
         letra,
+        tipo: data.tipo || "comienza",
         pista: data.pista || "",
         descripcion: data.descripcion || "",
         respuesta: respuestasArr,
@@ -64,21 +65,11 @@ export default function Creator() {
     };
 
     try {
-      const response = await fetch('http://localhost:3001/api/ruletas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: newRuleta.id, password: password.trim() })
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al guardar la contraseña en el servidor");
-      }
-
-      addRuleta(newRuleta);
+      await addRuleta(newRuleta, password.trim());
       navigate('/');
     } catch (error) {
       console.error(error);
-      alert("Hubo un problema al crear la ruleta en el servidor.");
+      alert("Hubo un error al crear la ruleta.");
     }
   };
 
