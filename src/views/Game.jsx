@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRuletas } from '../hooks/useRuletas';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trophy } from 'lucide-react'; // <-- Agregamos Trophy
 
 // Helper for string comparison
 const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -14,6 +14,7 @@ export default function Game() {
   const [ruleta, setRuleta] = useState(() => getRuletaById(id) || null);
   const [playerName, setPlayerName] = useState('');
   const [gameState, setGameState] = useState('start'); // start | playing | gameover
+  const [showRanking, setShowRanking] = useState(false);
   
   // Game state variables
   const [questions, setQuestions] = useState(() => {
@@ -111,7 +112,6 @@ export default function Game() {
     setQuestions(newQuestions);
     setInputValue('');
 
-    // Pre-calcular el siguiente índice para evitar problemas de cierre léxico en setTimeout
     let nextIndex = getNextPendingIndex(currentIndex, roundsCompleted, newQuestions);
     let nextRounds = roundsCompleted;
 
@@ -138,7 +138,7 @@ export default function Game() {
         setCurrentIndex(nextIndex);
       }
       isAdvancing.current = false;
-    }, 600); // 600ms permite al usuario ver si acertó o falló claramente
+    }, 600);
   };
 
   const handlePass = () => {
@@ -196,14 +196,20 @@ export default function Game() {
     }
   };
 
+  // Helper de tiempo para el ranking
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
   const renderCircle = () => {
     if (questions.length === 0) return null;
     const total = questions.length;
-    // Usamos porcentaje en lugar de píxeles para el radio, haciéndolo 100% responsivo
-    const radiusPct = 55; 
+    const radiusPct = 48; 
     
     return (
-      <div className="relative w-full max-w-[320px] sm:max-w-[500px] aspect-square flex items-center justify-center my-8 mx-auto">
+      <div className="relative w-full max-w-[320px] sm:max-w-[450px] lg:max-w-[500px] aspect-square flex items-center justify-center my-4 sm:my-8 mx-auto">
         {questions.map((q, i) => {
           const angle = (i * (360 / total) - 90) * (Math.PI / 180);
           const x = Math.cos(angle) * radiusPct;
@@ -214,7 +220,6 @@ export default function Game() {
           else if (q.estado === -1) stateClass = 'letter-incorrect';
           else if (q.estado === 2) stateClass = 'letter-passed';
           
-          // Solo marcamos como activa si estamos parados ahí y NO acabamos de responder/pasar en los ultimos milisegundos
           if (i === currentIndex && gameState === 'playing' && (q.estado === 0 || q.estado === 2)) {
             stateClass = 'letter-active';
           }
@@ -230,7 +235,6 @@ export default function Game() {
           );
         })}
 
-        {/* Center Clue */}
         <div className="absolute inset-0 m-auto w-[68%] h-[68%] bg-dark-800/90 rounded-full border border-dark-600 shadow-2xl flex flex-col items-center justify-center p-3 sm:p-6 text-center z-0 backdrop-blur-md">
           {gameState === 'playing' ? (
             <>
@@ -257,7 +261,8 @@ export default function Game() {
   if (!ruleta) return null;
 
   return (
-    <div className="py-4 max-w-5xl mx-auto flex flex-col items-center">
+    // Ampliamos el max-w general para que entren ambas columnas holgadamente
+    <div className="py-4 max-w-7xl mx-auto flex flex-col items-center px-4">
       <h1 className="text-3xl font-bold text-white mb-2">{ruleta.titulo}</h1>
 
       {gameState === 'start' && (
@@ -284,7 +289,8 @@ export default function Game() {
 
       {gameState === 'playing' && (
         <div className="w-full mt-4 flex flex-col items-center">
-          <div className="flex w-full max-w-3xl justify-between items-center mb-4 px-6 glass-panel py-4">
+          {/* Header Superior */}
+          <div className="flex w-full max-w-5xl justify-between items-center mb-6 px-6 glass-panel py-4">
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => {
@@ -305,32 +311,86 @@ export default function Game() {
             <div className="font-bold text-green-400 text-2xl drop-shadow-md">🏆 {score}</div>
           </div>
 
-          <div className="w-full max-w-3xl p-6">
-            {renderCircle()}
-          </div>
-
-          <div className="w-full max-w-2xl  p-6 shadow-2xl border-primary-500/20">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Escribe tu respuesta y presiona ENTER"
-              className="input-field text-center text-2xl py-5 mb-4 shadow-inner"
-              autoComplete="off"
-            />
-            <div className="flex gap-4">
-              <button onClick={handleAnswer} className="flex-1 btn-primary py-4 text-xl">
-                ✔️ Responder
-              </button>
-              <button onClick={handlePass} className="flex-1 btn-secondary py-4 text-xl">
-                ➡️ Pasapalabra
-              </button>
+          {/* Contenedor Dividido: Ranking Izquierda, Ruleta Centro, Espaciador Derecha para Centrar */}
+          <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr_300px] 2xl:grid-cols-[340px_1fr_340px] w-full gap-6 xl:gap-8 items-start justify-center">
+            
+            {/* --- SIDEBAR IZQUIERDO: RANKING --- */}
+            <div className={`w-full order-2 xl:order-1 glass-panel p-0 overflow-hidden flex-col h-[400px] xl:h-[580px] mt-8 xl:mt-0 ${showRanking ? 'flex' : 'hidden xl:flex'}`}>
+              <div className="bg-dark-800/80 p-4 border-b border-dark-700 flex justify-between items-center">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Trophy className="text-yellow-400" size={24} /> 
+                  Top Ranking
+                </h2>
+              </div>
+              <div className="p-4 overflow-y-auto flex-1">
+                {!ruleta.ranking || ruleta.ranking.length === 0 ? (
+                  <p className="text-center text-slate-400 py-8">Aún no hay partidas registradas.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {ruleta.ranking.map((r, i) => (
+                      <li key={i} className="flex justify-between items-center p-3 rounded-lg bg-dark-800/50 border border-dark-700">
+                        <div className="flex items-center gap-3">
+                          <span className={`font-bold w-6 text-center ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-600' : 'text-slate-500'}`}>
+                            #{i + 1}
+                          </span>
+                          <span className="font-semibold truncate max-w-[120px]" title={r.playerName}>
+                            {r.playerName}
+                          </span>
+                        </div>
+                        <div className="text-right flex items-center gap-3 text-sm text-slate-300">
+                          <span className="text-green-400 font-bold">{r.score} pts</span>
+                          <span className="text-xs">⏱ {formatTime(r.timeSeconds)}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
-            <p className="text-center text-slate-500 text-sm mt-4 font-medium tracking-wide">
-              PISTAS: <strong className="text-slate-300">ENTER</strong> = Responder &nbsp;&bull;&nbsp; <strong className="text-slate-300">TAB</strong> = Pasapalabra
-            </p>
+
+            {/* --- CENTRO: RULETA E INPUTS --- */}
+            <div className="w-full order-1 xl:order-2 flex flex-col items-center justify-center">
+              {renderCircle()}
+              
+              <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl p-4 sm:p-6 shadow-2xl border-primary-500/20 mt-2 sm:mt-4 bg-dark-800/60 backdrop-blur-md rounded-2xl border">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Escribe tu respuesta y presiona ENTER"
+                  className="input-field text-center text-xl sm:text-2xl py-4 sm:py-5 mb-4 shadow-inner"
+                  autoComplete="off"
+                />
+                <div className="flex gap-2 sm:gap-4">
+                  <button onClick={handleAnswer} className="flex-1 btn-primary py-3 sm:py-4 text-lg sm:text-xl">
+                    ✔️ <span className="hidden min-[440px]:inline">Responder</span>
+                  </button>
+                  <button onClick={handlePass} className="flex-1 btn-secondary py-3 sm:py-4 text-lg sm:text-xl">
+                    ➡️ <span className="hidden min-[440px]:inline">Pasapalabra</span>
+                  </button>
+                </div>
+                <p className="text-center text-slate-500 text-xs sm:text-sm mt-4 font-medium tracking-wide">
+                  PISTAS: <strong className="text-slate-300">ENTER</strong> = Responder &nbsp;&bull;&nbsp; <strong className="text-slate-300">TAB</strong> = Pasapalabra
+                </p>
+                
+                {/* Botón para mostrar ranking en móviles/tablets (solo visible < 1280px) */}
+                <div className="mt-6 pt-4 border-t border-dark-600 xl:hidden">
+                  <button 
+                    onClick={() => setShowRanking(!showRanking)}
+                    className="w-full btn-secondary py-2 text-sm flex items-center justify-center gap-2"
+                  >
+                    <Trophy size={16} className="text-yellow-400" />
+                    {showRanking ? 'Ocultar Ranking' : 'Ver Ranking'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* --- COLUMNA DERECHA (Vacía, para mantener la ruleta centrada en el layout grid) --- */}
+            <div className="hidden xl:block order-3"></div>
+
           </div>
         </div>
       )}

@@ -7,7 +7,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
-        <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <main className="container mx-auto px-4 py-8 max-w-[1400px]">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/crear" element={<Creator />} />
