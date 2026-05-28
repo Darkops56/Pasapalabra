@@ -227,7 +227,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
-  console.log(`Servidor Socket.IO corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor Socket.IO corriendo en el puerto ${PORT}`);
 });

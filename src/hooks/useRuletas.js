@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { defaultRuleta } from '../data/defaultRuleta';
+import { API_BASE_URL } from '../config';
 
 export function useRuletas() {
   const [ruletas, setRuletas] = useState([defaultRuleta]);
@@ -7,10 +8,10 @@ export function useRuletas() {
 
   const fetchRuletas = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/ruletas');
+      const res = await fetch(`${API_BASE_URL}/api/ruletas`);
       const data = await res.json();
       
-      const defaultRankingRes = await fetch('http://localhost:3001/api/ruletas/default-ranking');
+      const defaultRankingRes = await fetch(`${API_BASE_URL}/api/ruletas/default-ranking`);
       const defaultRankingData = await defaultRankingRes.json();
       
       const updatedDefault = { ...defaultRuleta, ranking: defaultRankingData.ranking };
@@ -31,7 +32,7 @@ export function useRuletas() {
 
   const addRuleta = async (newRuleta, password) => {
     try {
-      const response = await fetch('http://localhost:3001/api/ruletas/new', {
+      const response = await fetch(`${API_BASE_URL}/api/ruletas/new`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruleta: newRuleta, password })
@@ -46,7 +47,7 @@ export function useRuletas() {
 
   const deleteRuleta = async (id) => {
     try {
-      await fetch(`http://localhost:3001/api/ruletas/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}/api/ruletas/${id}`, { method: 'DELETE' });
       await fetchRuletas();
     } catch (e) {
       console.error('Error deleting ruleta:', e);
@@ -55,7 +56,7 @@ export function useRuletas() {
 
   const saveRanking = async (id, playerName, score, timeSeconds) => {
     try {
-      await fetch(`http://localhost:3001/api/ruletas/${id}/ranking`, {
+      await fetch(`${API_BASE_URL}/api/ruletas/${id}/ranking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerName, score, timeSeconds })
