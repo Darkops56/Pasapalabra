@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { defaultRuleta } from '../data/defaultRuleta';
+import { defaultRuletas } from '../data/defaultRuleta';
 import { API_BASE_URL } from '../config';
 
 export function useRuletas() {
-  const [ruletas, setRuletas] = useState([defaultRuleta]);
+  const [ruletas, setRuletas] = useState(defaultRuletas);
   const [loading, setLoading] = useState(true);
 
   const fetchRuletas = async () => {
@@ -12,10 +12,14 @@ export function useRuletas() {
       const data = await res.json();
       
       const defaultRankingRes = await fetch(`${API_BASE_URL}/api/ruletas/default-ranking`);
-      const defaultRankingData = await defaultRankingRes.json();
+      const defaultRankingsData = await defaultRankingRes.json();
       
-      const updatedDefault = { ...defaultRuleta, ranking: defaultRankingData.ranking };
-      setRuletas([updatedDefault, ...data.ruletas]);
+      const updatedDefaults = defaultRuletas.map(r => ({
+        ...r,
+        ranking: defaultRankingsData[r.id] || []
+      }));
+      
+      setRuletas([...updatedDefaults, ...data.ruletas]);
     } catch (e) {
       console.error('Error fetching ruletas:', e);
     } finally {

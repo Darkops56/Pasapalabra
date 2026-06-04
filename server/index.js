@@ -25,7 +25,7 @@ const DEFAULT_RANKING_PATH = path.join(process.cwd(), 'defaultRanking.json');
 
 let ruletasPasswords = {}; 
 let ruletasData = [];
-let defaultRanking = [];
+let defaultRankings = {};
 
 // Inicializar ruletasPasswords
 if (fs.existsSync(DB_PATH)) {
@@ -48,10 +48,15 @@ if (fs.existsSync(RULETAS_DATA_PATH)) {
   }
 }
 
-// Inicializar defaultRanking
+// Inicializar defaultRankings
 if (fs.existsSync(DEFAULT_RANKING_PATH)) {
   try {
-    defaultRanking = JSON.parse(fs.readFileSync(DEFAULT_RANKING_PATH, 'utf-8'));
+    const data = JSON.parse(fs.readFileSync(DEFAULT_RANKING_PATH, 'utf-8'));
+    if (Array.isArray(data)) {
+      defaultRankings = { 'default-1': data };
+    } else {
+      defaultRankings = data;
+    }
   } catch (e) {
     console.error("Error leyendo defaultRanking.json", e);
   }
@@ -63,7 +68,7 @@ app.get('/api/ruletas', (req, res) => {
 });
 
 app.get('/api/ruletas/default-ranking', (req, res) => {
-  res.json({ ranking: defaultRanking });
+  res.json(defaultRankings);
 });
 
 app.post('/api/ruletas/new', (req, res) => {
@@ -94,24 +99,23 @@ app.post('/api/ruletas/:id/ranking', (req, res) => {
   
   const newRank = { playerName, score, timeSeconds };
   
-  if (id === 'default-1') {
-    defaultRanking.push(newRank);
-    defaultRanking.sort((a, b) => {
+  const ruleta = ruletasData.find(r => r.id === id);
+  if (ruleta) {
+    if (!ruleta.ranking) ruleta.ranking = [];
+    ruleta.ranking.push(newRank);
+    ruleta.ranking.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       return a.timeSeconds - b.timeSeconds;
     });
-    fs.writeFileSync(DEFAULT_RANKING_PATH, JSON.stringify(defaultRanking));
+    fs.writeFileSync(RULETAS_DATA_PATH, JSON.stringify(ruletasData));
   } else {
-    const ruleta = ruletasData.find(r => r.id === id);
-    if (ruleta) {
-      if (!ruleta.ranking) ruleta.ranking = [];
-      ruleta.ranking.push(newRank);
-      ruleta.ranking.sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        return a.timeSeconds - b.timeSeconds;
-      });
-      fs.writeFileSync(RULETAS_DATA_PATH, JSON.stringify(ruletasData));
-    }
+    if (!defaultRankings[id]) defaultRankings[id] = [];
+    defaultRankings[id].push(newRank);
+    defaultRankings[id].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.timeSeconds - b.timeSeconds;
+    });
+    fs.writeFileSync(DEFAULT_RANKING_PATH, JSON.stringify(defaultRankings));
   }
   
   res.json({ success: true });
