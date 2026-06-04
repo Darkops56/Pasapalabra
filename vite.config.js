@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-      'pasapalabra-gvkv.onrender.com',
+      'https://pasapalabra-gvkv.onrender.com/',
       'localhost'
     ]
   }
