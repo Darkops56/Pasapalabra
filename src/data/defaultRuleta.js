@@ -36,7 +36,7 @@ export const defaultRuletas = [
     password: "1234"
   },
   {
-    id: "ruleta-1780551059362",
+    id: "default-2",
     titulo: "Mundial",
     descripcion: "¿Crees tener una buena cultura General de los Mundiales?",
     isDefault: true,
