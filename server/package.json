@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "build": "echo 'No build needed for pure JS server'"
   },
   "dependencies": {
     "cors": "^2.8.5",
